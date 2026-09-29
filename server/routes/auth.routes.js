@@ -1,11 +1,8 @@
 import express from 'express';
 import {
-  register,
-  login,
-  logout,
-  refreshToken,
-  getMe,
-  updateProfile
+  register, login, logout,
+  refreshToken, getMe,
+  updateProfile, deleteAccount
 } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 
@@ -17,5 +14,6 @@ router.post('/logout', logout);
 router.post('/refresh', refreshToken);
 router.get('/me', protect, getMe);
 router.put('/update-profile', protect, updateProfile);
+router.delete('/delete-account', protect, deleteAccount);
 
 export default router;

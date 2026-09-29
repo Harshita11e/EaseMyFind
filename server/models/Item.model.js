@@ -11,8 +11,9 @@ const itemSchema = new mongoose.Schema({
     required: true
   },
   secretDetails: {
-    type: String,
-    required: true   // hidden from public, only poster sees it
+    primary: { type: String, required: true },
+    secondary: { type: String, default: '' },
+    tertiary: { type: String, default: '' }
   },
   category: {
     type: String,
@@ -28,7 +29,7 @@ const itemSchema = new mongoose.Schema({
     enum: ['lost', 'found', 'claimed', 'resolved'],
     required: true
   },
-  images: [{ type: String }],  // Cloudinary URLs
+  images: [{ type: String }],
   location: {
     address: { type: String, required: true },
     lat: { type: Number, required: true },
@@ -49,7 +50,7 @@ const itemSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// For efficient full-text search
-itemSchema.index({ title: 'text', description: 'text' });
+// Text index for search
+itemSchema.index({ title: 'text', description: 'text', category: 'text' });
 
 export default mongoose.model('Item', itemSchema);

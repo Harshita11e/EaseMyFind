@@ -13,11 +13,11 @@ const claimSchema = new mongoose.Schema({
   },
   proofDescription: {
     type: String,
-    required: true  // answer to secret details
+    required: true
   },
   proofImage: {
     type: String,
-    default: ''     // optional old photo with item
+    default: ''
   },
   status: {
     type: String,
@@ -27,7 +27,14 @@ const claimSchema = new mongoose.Schema({
   reviewedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null   // the finder who accepts/rejects
+    default: null
+  },
+  // ✅ NEW — match score
+  matchScore: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
   }
 }, { timestamps: true });
 

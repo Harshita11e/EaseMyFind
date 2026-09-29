@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../redux/slices/authSlice';
+import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon, List, X } from '@phosphor-icons/react';
 import api from '../utils/axios';
 
 export default function Navbar() {
-  const { user } = useSelector((state) => state.auth);
-  const { unreadCount } = useSelector((state) => state.notifications);
+  const { user } = useSelector(s => s.auth);
+  const { unreadCount } = useSelector(s => s.notifications);
+  const { isDark, toggleTheme } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,142 +20,197 @@ export default function Navbar() {
     await api.post('/auth/logout');
     dispatch(logout());
     navigate('/');
+    setDropdownOpen(false);
+    setMenuOpen(false);
   };
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <>
+      <nav className="nav">
+        {/* Logo */}
+        <Link to="/" className="nav-logo">EaseMyFind</Link>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">E</span>
-            </div>
-            <span className="font-bold text-xl text-slate-800">
-              Ease<span className="text-blue-600">MyFind</span>
-            </span>
-          </Link>
+        {/* Desktop links */}
+        <div className="nav-links">
+          <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
+          <Link to="/browse" className={`nav-link ${isActive('/browse') ? 'active' : ''}`}>Browse</Link>
+          <Link to="/map" className={`nav-link ${isActive('/map') ? 'active' : ''}`}>Map</Link>
+        </div>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
-            <Link to="/" className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}>
-              Home
+        {/* Actions */}
+        <div className="nav-actions">
+          {user && (
+            <Link to="/post-item" className="btn btn-ghost btn-sm">
+              + Post item
             </Link>
-            <Link to="/browse" className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/browse') ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}>
-              Browse
-            </Link>
-            <Link to="/map" className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/map') ? 'bg-blue-50 text-blue-600' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}>
-              🗺️ Map
-            </Link>
-            {user && (
-              <Link to="/post-item" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors ml-2">
-                + Post Item
-              </Link>
-            )}
-          </div>
+          )}
 
-          {/* Right Side */}
-          <div className="hidden md:flex items-center gap-3">
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-                >
-                  {/* Avatar */}
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-semibold text-sm">
-                    {user.name?.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">{user.name}</span>
-                  {/* Notification badge */}
-                  {unreadCount > 0 && (
-                    <span className="w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                      {unreadCount}
-                    </span>
-                  )}
-                  <span className="text-slate-400 text-xs">▼</span>
-                </button>
+          {/* Theme toggle */}
+          <button className="icon-btn" onClick={toggleTheme} title="Toggle theme">
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
 
-                {/* Dropdown */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
-                    <Link to="/dashboard" onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                      📋 My Dashboard
-                    </Link>
-                    {user.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setDropdownOpen(false)}
-                        className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                        🛡️ Admin Panel
-                      </Link>
-                    )}
-                    <hr className="my-1 border-slate-100" />
-                    <button onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                      🚪 Logout
-                    </button>
-                  </div>
+          {user ? (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '5px 10px', borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)', background: 'none',
+                  cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                  fontSize: '13px', fontWeight: '500', color: 'var(--text)',
+                  transition: 'all 0.1s'
+                }}
+              >
+                <div className="avatar avatar-xs" style={{ width: '20px', height: '20px', fontSize: '9px', borderRadius: '50%' }}>
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <span>{user.name?.split(' ')[0]}</span>
+                {unreadCount > 0 && (
+                  <span style={{
+                    width: '16px', height: '16px', borderRadius: '50%',
+                    background: 'var(--black)', color: 'var(--bg)',
+                    fontSize: '9px', fontWeight: '700',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>{unreadCount}</span>
                 )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link to="/login" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                  Login
-                </Link>
-                <Link to="/register" className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  Sign Up
-                </Link>
-              </div>
-            )}
-          </div>
+              </button>
+
+              {dropdownOpen && (
+                <div style={{
+                  position: 'absolute', right: 0, top: 'calc(100% + 6px)',
+                  width: '180px', background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', overflow: 'hidden',
+                  zIndex: 200,
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+                }}>
+                  {[
+                    { to: '/dashboard', label: 'Dashboard' },
+                    ...(user.role === 'admin' ? [{ to: '/admin', label: 'Admin Panel' }] : [])
+                  ].map(item => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setDropdownOpen(false)}
+                      style={{
+                        display: 'block', padding: '10px 14px',
+                        fontSize: '13px', color: 'var(--text2)',
+                        textDecoration: 'none', transition: 'background 0.1s',
+                        fontWeight: '500'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div style={{ height: '1px', background: 'var(--border)' }} />
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width: '100%', textAlign: 'left',
+                      padding: '10px 14px', fontSize: '13px',
+                      color: '#dc2626', background: 'none',
+                      border: 'none', cursor: 'pointer',
+                      fontFamily: 'Inter, sans-serif', fontWeight: '500'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
+              <Link to="/register" className="btn btn-black btn-sm">Sign up</Link>
+            </>
+          )}
 
           {/* Mobile menu button */}
           <button
+            className="icon-btn"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-50"
+            style={{ display: 'none' }}
+            id="mobile-menu-btn"
           >
-            {menuOpen ? '✕' : '☰'}
+            {menuOpen ? <X size={15} /> : <List size={15} />}
           </button>
         </div>
+      </nav>
 
-        {/* Mobile Menu */}
-        {menuOpen && (
-          <div className="md:hidden py-3 border-t border-slate-100 space-y-1">
-            <Link to="/" onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">Home</Link>
-            <Link to="/browse" onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">Browse</Link>
-            <Link to="/map" onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">🗺️ Map</Link>
-            {user ? (
-              <>
-                <Link to="/post-item" onClick={() => setMenuOpen(false)}
-                  className="block px-4 py-2 text-sm text-blue-600 font-medium hover:bg-blue-50 rounded-lg">+ Post Item</Link>
-                <Link to="/dashboard" onClick={() => setMenuOpen(false)}
-                  className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">📋 Dashboard</Link>
-                {user.role === 'admin' && (
-                  <Link to="/admin" onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">🛡️ Admin</Link>
-                )}
-                <button onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg">
-                  🚪 Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" onClick={() => setMenuOpen(false)}
-                  className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg">Login</Link>
-                <Link to="/register" onClick={() => setMenuOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg">Sign Up</Link>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    </nav>
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div style={{
+          background: 'var(--bg)',
+          borderBottom: '1px solid var(--border)',
+          padding: '12px 24px 16px',
+          display: 'flex', flexDirection: 'column', gap: '2px'
+        }}>
+          {[
+            { to: '/', label: 'Home' },
+            { to: '/browse', label: 'Browse' },
+            { to: '/map', label: 'Map' },
+          ].map(l => (
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                padding: '9px 12px', borderRadius: 'var(--radius)',
+                fontSize: '14px', color: 'var(--text2)',
+                textDecoration: 'none', fontWeight: '500'
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          {user ? (
+            <>
+              <Link to="/post-item" onClick={() => setMenuOpen(false)}
+                style={{ padding: '9px 12px', fontSize: '14px', color: 'var(--text)', fontWeight: '600', textDecoration: 'none' }}>
+                + Post item
+              </Link>
+              <Link to="/dashboard" onClick={() => setMenuOpen(false)}
+                style={{ padding: '9px 12px', fontSize: '14px', color: 'var(--text2)', textDecoration: 'none' }}>
+                Dashboard
+              </Link>
+              <button onClick={handleLogout}
+                style={{ textAlign: 'left', padding: '9px 12px', fontSize: '14px', color: '#dc2626', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)}
+                style={{ padding: '9px 12px', fontSize: '14px', color: 'var(--text2)', textDecoration: 'none' }}>Login</Link>
+              <Link to="/register" onClick={() => setMenuOpen(false)}
+                style={{ padding: '9px 12px', fontSize: '14px', color: 'var(--text)', fontWeight: '600', textDecoration: 'none' }}>Sign up</Link>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Close dropdown on outside click
+      {dropdownOpen && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 199 }}
+          onClick={() => setDropdownOpen(false)}
+        />
+      )} */}
+
+      <style>{`
+        @media (max-width: 768px) {
+          #mobile-menu-btn { display: flex !important; }
+          .nav-links { display: none !important; }
+        }
+      `}</style>
+    </>
   );
 }
